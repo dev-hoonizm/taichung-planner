@@ -3,12 +3,13 @@
 Project: `taichung-planner`
 GitHub: https://github.com/dev-hoonizm/taichung-planner.git
 
-2026년 9월 타이중 2박 3일 여행 중 휴대폰에서 사용하는 개인 대시보드입니다. 정적 `index.html`은 오프라인 캐시를 우선 표시하고, Cloudflare Pages Functions와 D1을 통해 여러 기기에서 일정 상태·체크리스트·회화 즐겨찾기·음식 기록·예산·지출·메모를 동기화합니다.
+2026년 9월 타이중 2박 3일 여행 중 휴대폰에서 사용하는 개인 대시보드입니다. 정적 `public/index.html`은 오프라인 캐시를 우선 표시하고, Cloudflare Workers Static Assets와 D1을 통해 여러 기기에서 일정 상태·체크리스트·회화 즐겨찾기·음식 기록·예산·지출·메모를 동기화합니다.
 
 ## Architecture
 
 ```text
-Browser → Cloudflare Pages → Pages Functions → Cloudflare D1
+Browser → Cloudflare Worker → API router → Cloudflare D1
+                         ↘ Static Assets
            ↘ localStorage offline cache
 ```
 
@@ -17,21 +18,17 @@ Browser → Cloudflare Pages → Pages Functions → Cloudflare D1
 - API authentication secret: `TRIP_API_KEY`
 - Framework/build server: 없음
 
-## Cloudflare Pages 설정
+## Cloudflare Workers 설정
 
-1. Cloudflare Dashboard에서 **Workers & Pages → Create → Pages → Connect to Git**으로 이동합니다.
-2. GitHub 저장소 `dev-hoonizm/taichung-planner`를 선택합니다.
-3. Production branch를 `main`으로 설정합니다.
-4. 빌드 설정은 다음 값을 사용합니다.
+Cloudflare Dashboard에서 Worker `taichung-planner`의 Builds에 GitHub 저장소 `dev-hoonizm/taichung-planner`와 production branch `main`을 연결합니다. `wrangler.jsonc`가 배포 설정의 source of truth입니다.
 
 | 항목 | 값 |
 |---|---|
-| Framework preset | None |
-| Build command | `exit 0` (또는 비워 두기) |
-| Build output directory | `/` |
+| Build command | 비워 두기 |
+| Deploy command | `npx wrangler deploy` |
 | Root directory | 저장소 루트 |
 
-이 프로젝트의 `index.html`과 `functions/`가 모두 저장소 루트에 있습니다. Cloudflare 공식 문서는 Functions가 있는 정적 HTML 사이트에서 `exit 0`을 권장합니다.
+`src/worker.js`가 API 요청을 처리하고 `public/`은 정적 자산으로 배포됩니다.
 
 ## D1 생성 및 연결
 
@@ -41,16 +38,14 @@ Dashboard에서 **Storage & Databases → D1 → Create Database**를 선택하�
 taichung-planner-db
 ```
 
-Pages 프로젝트 `taichung-planner`의 **Settings → Bindings → Add → D1 Database**에서 다음과 같이 연결합니다.
+Worker `taichung-planner`의 D1 binding은 `wrangler.jsonc`에서 다음 이름으로 연결합니다.
 
 ```text
 Variable name: DB
 Database: taichung-planner-db
 ```
 
-`wrangler.jsonc`의 `REPLACE_WITH_D1_DATABASE_ID`는 임의 값이 아닙니다. D1을 만든 뒤 Dashboard 또는 `npx wrangler d1 info taichung-planner-db`에서 실제 database ID를 확인해 교체해야 합니다.
-
-> `wrangler.jsonc`를 배포 설정에 사용하면 해당 파일이 설정의 source of truth가 됩니다. Dashboard에서 먼저 프로젝트와 binding을 구성했다면 `npx wrangler pages download config taichung-planner`로 현재 설정을 확인한 뒤, 저장소의 binding과 동일한지 비교하세요. Dashboard binding과 Wrangler binding을 서로 다른 값으로 이중 관리하지 마세요.
+`database_id`에는 Dashboard 또는 `npx wrangler d1 info taichung-planner-db`에서 확인한 실제 ID를 사용합니다.
 
 ## Schema 적용
 
@@ -76,7 +71,7 @@ npx wrangler d1 execute taichung-planner-db --local --file=./schema.sql
 
 ## API 인증 설정
 
-Cloudflare Pages 프로젝트의 **Settings → Variables and Secrets**에서 `TRIP_API_KEY`를 secret으로 추가합니다. 값은 이 저장소나 README에 기록하지 않습니다.
+Cloudflare Worker의 **Settings → Variables and Secrets**에서 `TRIP_API_KEY`를 secret으로 추가합니다. 값은 이 저장소나 README에 기록하지 않습니다.
 
 로컬 개발에서는 선택적으로 `.dev.vars`를 만들 수 있습니다.
 
@@ -94,10 +89,10 @@ TRIP_API_KEY="your-local-only-value"
 
 ```bash
 npx wrangler d1 execute taichung-planner-db --local --file=./schema.sql
-npx wrangler pages dev
+npx wrangler dev
 ```
 
-기본 주소는 `http://localhost:8788`입니다. 정적 화면만 확인하려면 `index.html`을 직접 열어도 되며, 이 경우 API 연결은 Offline으로 표시되고 localStorage 캐시는 계속 동작합니다.
+기본 주소는 `http://localhost:8787`입니다. 정적 화면만 확인하려면 `public/index.html`을 직접 열어도 되며, 이 경우 API 연결은 Offline으로 표시되고 localStorage 캐시는 계속 동작합니다.
 
 서버 함수의 인증·validation·prepared binding 단위 테스트는 다음 명령으로 실행합니다.
 
@@ -136,16 +131,16 @@ X-Trip-Key: <TRIP_API_KEY>
 
 ## 자동 배포
 
-GitHub 저장소가 Cloudflare Pages에 연결된 뒤 `main`에 push하면 Pages가 자동으로 새 배포를 시작합니다.
+GitHub 저장소가 Cloudflare Workers Builds에 연결된 뒤 `main`에 push하면 자동으로 새 배포를 시작합니다.
 
 ```text
-Codex 수정 → Git commit → GitHub push → Cloudflare Pages 자동 배포
-→ Pages Functions → D1
+Codex 수정 → Git commit → GitHub push → Cloudflare Workers 자동 배포
+→ Worker API / Static Assets → D1
 ```
 
 배포 후 확인:
 
 ```text
-https://<your-pages-project>.pages.dev/
-https://<your-pages-project>.pages.dev/api/health
+https://taichung-planner.<account-subdomain>.workers.dev/
+https://taichung-planner.<account-subdomain>.workers.dev/api/health
 ```

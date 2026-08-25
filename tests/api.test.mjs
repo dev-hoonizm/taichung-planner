@@ -6,6 +6,7 @@ import { onRequest as state } from "../functions/api/state.js";
 import { onRequest as expenses } from "../functions/api/expenses.js";
 import { onRequest as memo } from "../functions/api/memo.js";
 import { onRequest as auth } from "../functions/api/_middleware.js";
+import worker from "../src/worker.js";
 
 function createDb(options = {}) {
   const calls = [];
@@ -97,4 +98,31 @@ test("middleware rejects a wrong key and allows a correct key", async () => {
 
   const accepted = await auth({ request: new Request("https://test/api/health", { headers: { "X-Trip-Key": "correct" } }), env: { TRIP_API_KEY: "correct" }, next: () => new Response("next") });
   assert.equal(await accepted.text(), "next");
+});
+
+test("worker routes APIs through authentication and delegates assets", async () => {
+  const executionContext = {
+    waitUntil() {},
+    passThroughOnException() {}
+  };
+  const env = {
+    DB: createDb(),
+    TRIP_API_KEY: "correct",
+    ASSETS: {
+      fetch(request) { return new Response(`asset:${new URL(request.url).pathname}`); }
+    }
+  };
+
+  const rejected = await worker.fetch(new Request("https://test/api/health"), env, executionContext);
+  assert.equal(rejected.status, 401);
+
+  const accepted = await worker.fetch(new Request("https://test/api/health", { headers: { "X-Trip-Key": "correct" } }), env, executionContext);
+  assert.equal(accepted.status, 200);
+  assert.equal((await body(accepted)).data.database, "connected");
+
+  const unknown = await worker.fetch(new Request("https://test/api/unknown", { headers: { "X-Trip-Key": "correct" } }), env, executionContext);
+  assert.equal(unknown.status, 404);
+
+  const asset = await worker.fetch(new Request("https://test/"), env, executionContext);
+  assert.equal(await asset.text(), "asset:/");
 });
