@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "database_name": "taichung-planner-db",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "6f6452b2-70b9-4a1d-a086-33b76a4b878f",
       "preview_database_id": "DB"
     }
   ]
