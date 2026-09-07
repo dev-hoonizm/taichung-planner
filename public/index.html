@@ -307,10 +307,15 @@
     .phrase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .phrase-card { position: relative; padding: 18px; }
     .phrase-card .ko { margin: 0; color: var(--muted); font-size: .8rem; }
-    .phrase-card .zh { margin: 8px 38px 2px 0; font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; font-size: 1.6rem; font-weight: 850; line-height: 1.25; }
+    .phrase-line { display: flex; align-items: center; gap: 9px; padding-right: 34px; }
+    .phrase-card .en { flex: 1; margin: 7px 0 0; color: var(--ink); font-size: .92rem; font-weight: 750; line-height: 1.35; }
+    .phrase-card .zh { flex: 1; margin: 9px 0 2px; font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; font-size: 1.6rem; font-weight: 850; line-height: 1.25; }
     .phrase-card .pinyin { margin: 0; color: #8a756a; font-size: .75rem; }
     .fav-btn { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: transparent; color: #b9b1a4; cursor: pointer; font-size: 1.45rem; }
     .fav-btn.on { color: var(--yellow); }
+    .speak-btn { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 38px; min-height: 38px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); cursor: pointer; font-size: .78rem; font-weight: 850; }
+    .speak-btn.playing { border-color: var(--green); background: #e8f2ed; color: var(--green); }
+    .speak-btn:disabled { cursor: not-allowed; opacity: .42; }
     .phrase-actions { display: flex; gap: 7px; margin-top: 14px; }
     .phrase-actions button { flex: 1; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 9px; background: white; cursor: pointer; font-size: .72rem; font-weight: 800; }
     .empty-state { padding: 40px 20px; color: var(--muted); text-align: center; }
@@ -351,7 +356,14 @@
     .fullscreen-modal { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 20px; background: rgba(22,29,27,.72); }
     .fullscreen-modal.open { display: grid; }
     .modal-card { position: relative; width: min(760px, 100%); min-height: min(70vh, 620px); display: grid; place-items: center; padding: 54px 24px 32px; border-radius: 24px; background: white; color: #111; text-align: center; }
-    .modal-text { max-width: 100%; font-family: "Microsoft JhengHei", sans-serif; font-size: clamp(3rem, 12vw, 7rem); font-weight: 900; line-height: 1.16; overflow-wrap: anywhere; }
+    .modal-content { display: grid; justify-items: center; width: 100%; max-width: 680px; }
+    .modal-zh { max-width: 100%; margin: 0; font-family: "Microsoft JhengHei", sans-serif; font-size: clamp(3rem, 12vw, 7rem); font-weight: 900; line-height: 1.16; overflow-wrap: anywhere; }
+    .modal-pinyin { margin: 12px 0 0; color: #8a756a; font-size: clamp(.9rem, 2.5vw, 1.2rem); }
+    .modal-en { margin: 30px 0 0; font-size: clamp(1.25rem, 4vw, 2rem); font-weight: 800; line-height: 1.3; }
+    .modal-ko { margin: 8px 0 0; color: var(--muted); font-size: 1rem; }
+    .modal-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 28px; }
+    .modal-actions .speak-btn, .modal-copy { min-height: 44px; padding: 9px 14px; }
+    .modal-copy { border: 1px solid var(--line); border-radius: 999px; background: white; cursor: pointer; font-size: .78rem; font-weight: 850; }
     .modal-close { position: absolute; top: 14px; right: 14px; width: 46px; height: 46px; border: 0; border-radius: 50%; background: #eee; cursor: pointer; font-size: 1.2rem; }
     .toast { position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom)); z-index: 120; padding: 11px 18px; border-radius: 999px; background: var(--ink); color: white; box-shadow: var(--shadow); font-size: .8rem; font-weight: 850; opacity: 0; transform: translate(-50%, 12px); pointer-events: none; transition: .2s; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
@@ -583,8 +595,8 @@
     <!-- Traditional Chinese phrasebook -->
     <section class="tab-panel" id="phrases" data-tab="phrases" role="tabpanel" hidden>
       <div class="container">
-        <div class="section-head"><div><p class="eyebrow">Show &amp; speak</p><h2>Useful Phrases</h2></div><p>번체 중국어 문장을 크게 보여주거나 바로 복사할 수 있습니다.</p></div>
-        <div class="phrase-toolbar"><label class="sr-only" for="phraseSearch">회화 검색</label><input class="phrase-search" id="phraseSearch" type="search" placeholder="Search phrase... 화장실, 카드, 버스"><div class="phrase-filters" id="phraseFilters"></div></div>
+        <div class="section-head"><div><p class="eyebrow">Show &amp; speak</p><h2>Useful Phrases</h2></div><p>번체 중국어와 영어를 확인하고 음성으로 들려주거나 바로 복사할 수 있습니다.</p></div>
+        <div class="phrase-toolbar"><label class="sr-only" for="phraseSearch">회화 검색</label><input class="phrase-search" id="phraseSearch" type="search" placeholder="한국어 · English · 中文 검색"><div class="phrase-filters" id="phraseFilters"></div></div>
         <div id="favoritePhrases"></div>
         <div id="phraseGroups"></div>
       </div>
@@ -621,7 +633,7 @@
 
   <footer><div class="container"><strong>See you in Taichung.</strong><p>2026.09.11 — 09.13 · 개인 여행 플래너</p></div></footer>
   <button class="to-top" id="toTop" type="button" aria-label="맨 위로 이동">↑</button>
-  <div class="fullscreen-modal" id="fullscreenModal" role="dialog" aria-modal="true" aria-label="큰 글씨 보기"><div class="modal-card"><button class="modal-close" id="modalClose" type="button" aria-label="닫기">×</button><div class="modal-text" id="modalText"></div></div></div>
+  <div class="fullscreen-modal" id="fullscreenModal" role="dialog" aria-modal="true" aria-label="큰 글씨 보기"><div class="modal-card"><button class="modal-close" id="modalClose" type="button" aria-label="닫기">×</button><div class="modal-content"><p class="modal-zh" id="modalChinese"></p><p class="modal-pinyin" id="modalPinyin"></p><p class="modal-en" id="modalEnglish"></p><p class="modal-ko" id="modalKorean"></p><div class="modal-actions"><button class="speak-btn" id="modalChineseSpeak" type="button"><span class="speak-icon" aria-hidden="true">🔊</span><span>중국어 듣기</span></button><button class="speak-btn" id="modalEnglishSpeak" type="button"><span class="speak-icon" aria-hidden="true">🔊</span><span>영어 듣기</span></button><button class="modal-copy" id="modalCopy" type="button">중국어 복사</button></div></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite">Copied!</div>
 
   <script>
@@ -678,13 +690,13 @@
     ];
     const tipData = ["공항에서 EasyCard 구매·충전","버스는 승차·하차 때 모두 태그","Taichung Go로 실시간 도착 확인","야시장에서는 현금 준비","9월은 매우 덥고 습할 수 있음","접이식 우산 준비","쇼핑 후 호텔에 짐 내려놓기","Uber는 버스 대기가 길거나 지쳤을 때만"];
     const phraseData = [
-      ["hello","BASIC","안녕하세요","你好","Nǐ hǎo"],["thanks","BASIC","감사합니다","謝謝","Xièxie"],["no-thanks","BASIC","괜찮아요 / 필요 없어요","不用，謝謝","Bú yòng, xièxie"],["sorry","BASIC","죄송합니다 / 실례합니다","不好意思","Bù hǎoyìsi"],["yes","BASIC","네","好","Hǎo"],["understand","BASIC","알겠습니다","知道了","Zhīdào le"],
-      ["two","FOOD","두 명이에요","兩位","Liǎng wèi"],["one-person","FOOD","혼자예요","一位","Yí wèi"],["one-this","FOOD","이거 하나 주세요","我要一個這個","Wǒ yào yí ge zhège"],["this","FOOD","이거 주세요","我要這個","Wǒ yào zhège"],["recommend","FOOD","추천해주세요","請問有推薦的嗎？","Qǐngwèn yǒu tuījiàn de ma?"],["popular","FOOD","제일 인기 있는 게 뭐예요?","最受歡迎的是哪一個？","Zuì shòu huānyíng de shì nǎ yí ge?"],["no-spicy","FOOD","맵지 않게 해주세요","不要辣","Bú yào là"],["little-spicy","FOOD","조금만 맵게 해주세요","小辣","Xiǎo là"],["no-cilantro","FOOD","고수 빼주세요","不要香菜","Bú yào xiāngcài"],["takeout","FOOD","포장해주세요","我要外帶","Wǒ yào wàidài"],["dine-in","FOOD","여기서 먹을게요","內用","Nèiyòng"],["bill","FOOD","계산할게요","買單","Mǎidān"],["card","FOOD","카드 되나요?","可以刷卡嗎？","Kěyǐ shuākǎ ma?"],["cash-only","FOOD","현금만 되나요?","只能付現金嗎？","Zhǐ néng fù xiànjīn ma?"],
-      ["price","NIGHT MARKET","이거 얼마예요?","這個多少錢？","Zhège duōshao qián?"],["one","NIGHT MARKET","하나 주세요","一個","Yí ge"],["two-items","NIGHT MARKET","두 개 주세요","兩個","Liǎng ge"],["bag","NIGHT MARKET","봉투 주세요","請給我一個袋子","Qǐng gěi wǒ yí ge dàizi"],["too-spicy","NIGHT MARKET","너무 매워요","太辣了","Tài là le"],["delicious","NIGHT MARKET","맛있어요!","很好吃！","Hěn hǎochī!"],
-      ["station","TRANSPORT","타이중역에 가고 싶어요","我要去台中車站","Wǒ yào qù Táizhōng Chēzhàn"],["take-here","TRANSPORT","여기 가주세요","請帶我去這裡","Qǐng dài wǒ qù zhèlǐ"],["stop-here","TRANSPORT","여기서 내려주세요","請在這裡停","Qǐng zài zhèlǐ tíng"],["bus-station","TRANSPORT","이 버스가 타이중역에 가나요?","這班公車到台中車站嗎？","Zhè bān gōngchē dào Táizhōng Chēzhàn ma?"],["bus-airport","TRANSPORT","이 버스가 타이중 공항에 가나요?","這班公車到臺中國際機場嗎？","Zhè bān gōngchē dào Táizhōng Guójì Jīchǎng ma?"],["bus-fengchia","TRANSPORT","이 버스가 펑지아대학에 가나요?","這班公車到逢甲大學嗎？","Zhè bān gōngchē dào Féngjiǎ Dàxué ma?"],["easycard","TRANSPORT","이지카드 사용할 수 있나요?","可以用悠遊卡嗎？","Kěyǐ yòng Yōuyóukǎ ma?"],
-      ["reserved","HOTEL","예약했어요","我有訂房","Wǒ yǒu dìngfáng"],["checkin","HOTEL","체크인하고 싶어요","我要辦入住","Wǒ yào bàn rùzhù"],["store-bag","HOTEL","짐을 맡길 수 있나요?","可以寄放行李嗎？","Kěyǐ jìfàng xínglǐ ma?"],["get-bag","HOTEL","짐 찾으러 왔어요","我要拿行李","Wǒ yào ná xínglǐ"],
-      ["toilet","HELP","화장실 어디예요?","請問廁所在哪裡？","Qǐngwèn cèsuǒ zài nǎlǐ?"],["help","HELP","도와주세요","請幫幫我","Qǐng bāngbāng wǒ"],["lost","HELP","길을 잃었어요","我迷路了","Wǒ mílù le"],["english","HELP","영어 할 수 있나요?","會說英文嗎？","Huì shuō Yīngwén ma?"],["korean","HELP","한국어 할 수 있나요?","會說韓文嗎？","Huì shuō Hánwén ma?"]
-    ].map(([id,category,ko,zh,pinyin]) => ({id,category,ko,zh,pinyin}));
+      ["hello","BASIC","안녕하세요","Hello.","你好","Nǐ hǎo"],["thanks","BASIC","감사합니다","Thank you.","謝謝","Xièxie"],["no-thanks","BASIC","괜찮아요 / 필요 없어요","No, thank you.","不用，謝謝","Bú yòng, xièxie"],["sorry","BASIC","죄송합니다 / 실례합니다","Excuse me. / I'm sorry.","不好意思","Bù hǎoyìsi"],["yes","BASIC","네","Yes.","好","Hǎo"],["understand","BASIC","알겠습니다","I understand.","知道了","Zhīdào le"],
+      ["two","FOOD","두 명이에요","A table for two, please.","兩位","Liǎng wèi"],["one-person","FOOD","혼자예요","A table for one, please.","一位","Yí wèi"],["one-this","FOOD","이거 하나 주세요","One of these, please.","我要一個這個","Wǒ yào yí ge zhège"],["this","FOOD","이거 주세요","This one, please.","我要這個","Wǒ yào zhège"],["recommend","FOOD","추천해주세요","What do you recommend?","請問有推薦的嗎？","Qǐngwèn yǒu tuījiàn de ma?"],["popular","FOOD","제일 인기 있는 게 뭐예요?","What's the most popular item?","最受歡迎的是哪一個？","Zuì shòu huānyíng de shì nǎ yí ge?"],["no-spicy","FOOD","맵지 않게 해주세요","Not spicy, please.","不要辣","Bú yào là"],["little-spicy","FOOD","조금만 맵게 해주세요","Just a little spicy, please.","小辣","Xiǎo là"],["no-cilantro","FOOD","고수 빼주세요","No cilantro, please.","不要香菜","Bú yào xiāngcài"],["takeout","FOOD","포장해주세요","To go, please.","我要外帶","Wǒ yào wàidài"],["dine-in","FOOD","여기서 먹을게요","For here, please.","內用","Nèiyòng"],["bill","FOOD","계산할게요","Could we get the bill, please?","買單","Mǎidān"],["card","FOOD","카드 되나요?","Can I pay by card?","可以刷卡嗎？","Kěyǐ shuākǎ ma?"],["cash-only","FOOD","현금만 되나요?","Is it cash only?","只能付現金嗎？","Zhǐ néng fù xiànjīn ma?"],
+      ["price","NIGHT MARKET","이거 얼마예요?","How much is this?","這個多少錢？","Zhège duōshao qián?"],["one","NIGHT MARKET","하나 주세요","One, please.","一個","Yí ge"],["two-items","NIGHT MARKET","두 개 주세요","Two, please.","兩個","Liǎng ge"],["bag","NIGHT MARKET","봉투 주세요","Could I have a bag, please?","請給我一個袋子","Qǐng gěi wǒ yí ge dàizi"],["too-spicy","NIGHT MARKET","너무 매워요","It's too spicy.","太辣了","Tài là le"],["delicious","NIGHT MARKET","맛있어요!","It's delicious!","很好吃！","Hěn hǎochī!"],
+      ["station","TRANSPORT","타이중역에 가고 싶어요","I'd like to go to Taichung Station.","我要去台中車站","Wǒ yào qù Táizhōng Chēzhàn"],["take-here","TRANSPORT","여기 가주세요","Please take me here.","請帶我去這裡","Qǐng dài wǒ qù zhèlǐ"],["stop-here","TRANSPORT","여기서 내려주세요","Please stop here.","請在這裡停","Qǐng zài zhèlǐ tíng"],["bus-station","TRANSPORT","이 버스가 타이중역에 가나요?","Does this bus go to Taichung Station?","這班公車到台中車站嗎？","Zhè bān gōngchē dào Táizhōng Chēzhàn ma?"],["bus-airport","TRANSPORT","이 버스가 타이중 공항에 가나요?","Does this bus go to Taichung International Airport?","這班公車到臺中國際機場嗎？","Zhè bān gōngchē dào Táizhōng Guójì Jīchǎng ma?"],["bus-fengchia","TRANSPORT","이 버스가 펑지아대학에 가나요?","Does this bus go to Feng Chia University?","這班公車到逢甲大學嗎？","Zhè bān gōngchē dào Féngjiǎ Dàxué ma?"],["easycard","TRANSPORT","이지카드 사용할 수 있나요?","Can I use an EasyCard?","可以用悠遊卡嗎？","Kěyǐ yòng Yōuyóukǎ ma?"],
+      ["reserved","HOTEL","예약했어요","I have a reservation.","我有訂房","Wǒ yǒu dìngfáng"],["checkin","HOTEL","체크인하고 싶어요","I'd like to check in.","我要辦入住","Wǒ yào bàn rùzhù"],["store-bag","HOTEL","짐을 맡길 수 있나요?","Could you store my luggage?","可以寄放行李嗎？","Kěyǐ jìfàng xínglǐ ma?"],["get-bag","HOTEL","짐 찾으러 왔어요","I'm here to collect my luggage.","我要拿行李","Wǒ yào ná xínglǐ"],
+      ["toilet","HELP","화장실 어디예요?","Where is the restroom?","請問廁所在哪裡？","Qǐngwèn cèsuǒ zài nǎlǐ?"],["help","HELP","도와주세요","Please help me.","請幫幫我","Qǐng bāngbāng wǒ"],["lost","HELP","길을 잃었어요","I'm lost.","我迷路了","Wǒ mílù le"],["english","HELP","영어 할 수 있나요?","Do you speak English?","會說英文嗎？","Huì shuō Yīngwén ma?"],["korean","HELP","한국어 할 수 있나요?","Do you speak Korean?","會說韓文嗎？","Huì shuō Hánwén ma?"]
+    ].map(([id,category,ko,en,zh,pinyin]) => ({id,category,ko,en,zh,pinyin}));
     const defaultFavorites = ["this","price","card","toilet","take-here","store-bag"];
     const foodData = ["루러우판","샤오롱바오","딤섬","지파이","우육면","총좌빙","대만 소시지","펑리수","망고 디저트","버블티","대만 맥주","야시장 간식"];
 
@@ -901,39 +913,107 @@
 
     function escapeAttribute(value){ return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-    /* ---------- Phrasebook, copy & fullscreen ---------- */
+    /* ---------- Phrasebook, speech, copy & fullscreen ---------- */
     let phraseCategory = "ALL";
     const phraseFavorites = new Set(storage.get("taichung-phrase-favorites", defaultFavorites));
     const phraseCategories = ["ALL","BASIC","FOOD","NIGHT MARKET","TRANSPORT","HOTEL","HELP"];
+    const speechSupported = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+    let speechVoices = [];
+    let activeSpeechKey = "";
+    let speechRunId = 0;
+    function refreshSpeechVoices() { if (speechSupported) speechVoices = window.speechSynthesis.getVoices(); }
+    function preferredVoice(locale) {
+      const target = locale.toLowerCase();
+      const base = target.split("-")[0];
+      return speechVoices.find(voice => voice.lang.toLowerCase() === target) || speechVoices.find(voice => voice.lang.toLowerCase().startsWith(`${base}-`));
+    }
+    function updateSpeechButtons() {
+      document.querySelectorAll("[data-speak-key]").forEach(button => {
+        const playing = button.dataset.speakKey === activeSpeechKey;
+        button.disabled = !speechSupported;
+        button.classList.toggle("playing", playing);
+        button.setAttribute("aria-pressed", String(playing));
+        const icon = button.querySelector(".speak-icon");
+        if (icon) icon.textContent = playing ? "■" : "🔊";
+        if (!speechSupported) button.title = "이 브라우저에서는 음성 재생을 지원하지 않습니다.";
+      });
+    }
+    function stopSpeech() {
+      speechRunId += 1;
+      if (speechSupported) window.speechSynthesis.cancel();
+      activeSpeechKey = "";
+      updateSpeechButtons();
+    }
+    function speakPhrase(id, language) {
+      if (!speechSupported) { showToast("이 브라우저에서는 음성 재생을 지원하지 않습니다."); return; }
+      const phrase = phraseData.find(item => item.id === id);
+      if (!phrase || !["zh","en"].includes(language)) return;
+      const key = `${id}:${language}`;
+      if (activeSpeechKey === key) { stopSpeech(); return; }
+      window.speechSynthesis.cancel();
+      const runId = ++speechRunId;
+      const locale = language === "zh" ? "zh-TW" : "en-US";
+      const utterance = new SpeechSynthesisUtterance(language === "zh" ? phrase.zh : phrase.en);
+      utterance.lang = locale;
+      utterance.rate = language === "zh" ? .85 : .9;
+      const voice = preferredVoice(locale);
+      if (voice) utterance.voice = voice;
+      activeSpeechKey = key;
+      updateSpeechButtons();
+      const finish = () => { if (runId === speechRunId) { activeSpeechKey = ""; updateSpeechButtons(); } };
+      utterance.addEventListener("end", finish);
+      utterance.addEventListener("error", event => {
+        finish();
+        if (!["canceled","interrupted"].includes(event.error)) showToast("음성을 재생할 수 없습니다.");
+      });
+      window.speechSynthesis.speak(utterance);
+    }
+    if (speechSupported) {
+      refreshSpeechVoices();
+      window.speechSynthesis.addEventListener("voiceschanged", refreshSpeechVoices);
+    }
     function phraseCard(phrase) {
-      return `<article class="phrase-card card"><button class="fav-btn ${phraseFavorites.has(phrase.id)?'on':''}" type="button" data-favorite="${phrase.id}" aria-label="즐겨찾기">${phraseFavorites.has(phrase.id)?'★':'☆'}</button><p class="ko">${phrase.ko}</p><p class="zh">${phrase.zh}</p><p class="pinyin">${phrase.pinyin}</p><div class="phrase-actions"><button type="button" data-fullscreen="${escapeAttribute(phrase.zh)}">크게 보기</button><button type="button" data-copy="${escapeAttribute(phrase.zh)}">복사</button></div></article>`;
+      return `<article class="phrase-card card"><button class="fav-btn ${phraseFavorites.has(phrase.id)?'on':''}" type="button" data-favorite="${phrase.id}" aria-label="즐겨찾기">${phraseFavorites.has(phrase.id)?'★':'☆'}</button><p class="ko">${phrase.ko}</p><div class="phrase-line"><p class="en" lang="en">${phrase.en}</p><button class="speak-btn" type="button" data-speak-key="${phrase.id}:en" aria-label="영어 문장 듣기" aria-pressed="false"><span class="speak-icon" aria-hidden="true">🔊</span></button></div><div class="phrase-line"><p class="zh" lang="zh-TW">${phrase.zh}</p><button class="speak-btn" type="button" data-speak-key="${phrase.id}:zh" aria-label="중국어 문장 듣기" aria-pressed="false"><span class="speak-icon" aria-hidden="true">🔊</span></button></div><p class="pinyin">${phrase.pinyin}</p><div class="phrase-actions"><button type="button" data-fullscreen="${phrase.id}">크게 보기</button><button type="button" data-copy="${escapeAttribute(phrase.zh)}">중국어 복사</button></div></article>`;
     }
     function renderPhrases() {
       const query = document.getElementById("phraseSearch").value.trim().toLowerCase();
       document.getElementById("phraseFilters").innerHTML = phraseCategories.map(category => `<button class="filter-btn ${category===phraseCategory?'active':''}" type="button" data-phrase-filter="${category}">${category}</button>`).join("");
-      const matches = phraseData.filter(phrase => (phraseCategory === "ALL" || phrase.category === phraseCategory) && `${phrase.ko} ${phrase.zh} ${phrase.pinyin} ${phrase.category}`.toLowerCase().includes(query));
+      const matches = phraseData.filter(phrase => (phraseCategory === "ALL" || phrase.category === phraseCategory) && `${phrase.ko} ${phrase.en} ${phrase.zh} ${phrase.pinyin} ${phrase.category}`.toLowerCase().includes(query));
       const favorites = matches.filter(phrase => phraseFavorites.has(phrase.id));
       document.getElementById("favoritePhrases").innerHTML = favorites.length ? `<div class="phrase-group"><h3>★ MY PHRASES</h3><div class="phrase-grid">${favorites.map(phraseCard).join("")}</div></div>` : "";
       const grouped = phraseCategories.slice(1).map(category => [category,matches.filter(phrase => phrase.category===category && !phraseFavorites.has(phrase.id))]).filter(([,items])=>items.length);
       document.getElementById("phraseGroups").innerHTML = grouped.length ? grouped.map(([category,items]) => `<div class="phrase-group"><h3>${category}</h3><div class="phrase-grid">${items.map(phraseCard).join("")}</div></div>`).join("") : `<div class="empty-state">검색 결과가 없습니다.</div>`;
+      updateSpeechButtons();
     }
     document.getElementById("phraseSearch").addEventListener("input",renderPhrases);
     document.getElementById("phraseFilters").addEventListener("click",event=>{const button=event.target.closest("[data-phrase-filter]");if(!button)return;phraseCategory=button.dataset.phraseFilter;renderPhrases();});
     document.getElementById("phrases").addEventListener("click",event=>{const button=event.target.closest("[data-favorite]");if(!button)return;const id=button.dataset.favorite;phraseFavorites.has(id)?phraseFavorites.delete(id):phraseFavorites.add(id);storage.set("taichung-phrase-favorites",[...phraseFavorites]);renderPhrases();});
 
-    const modal = document.getElementById("fullscreenModal"); const modalText = document.getElementById("modalText"); const toast = document.getElementById("toast"); let toastTimer;
+    const modal = document.getElementById("fullscreenModal"); const toast = document.getElementById("toast"); let toastTimer;
     function showToast(message="Copied!"){toast.textContent=message;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),1500);}
     async function copyText(text){
       try { await navigator.clipboard.writeText(text); }
       catch { const area=document.createElement("textarea");area.value=text;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove(); }
       showToast();
     }
-    function openFullscreen(text){modalText.textContent=text;modal.classList.add("open");document.body.style.overflow="hidden";document.getElementById("modalClose").focus();}
-    function closeFullscreen(){modal.classList.remove("open");document.body.style.overflow="";}
-    document.addEventListener("click",event=>{const copy=event.target.closest("[data-copy]");if(copy)copyText(copy.dataset.copy);const full=event.target.closest("[data-fullscreen]");if(full)openFullscreen(full.dataset.fullscreen);});
+    function openFullscreen(id){
+      const phrase=phraseData.find(item=>item.id===id);if(!phrase)return;
+      document.getElementById("modalChinese").textContent=phrase.zh;
+      document.getElementById("modalPinyin").textContent=phrase.pinyin;
+      document.getElementById("modalEnglish").textContent=phrase.en;
+      document.getElementById("modalKorean").textContent=phrase.ko;
+      document.getElementById("modalChineseSpeak").dataset.speakKey=`${phrase.id}:zh`;
+      document.getElementById("modalEnglishSpeak").dataset.speakKey=`${phrase.id}:en`;
+      document.getElementById("modalCopy").dataset.copy=phrase.zh;
+      modal.classList.add("open");document.body.style.overflow="hidden";updateSpeechButtons();document.getElementById("modalClose").focus();
+    }
+    function closeFullscreen(){stopSpeech();modal.classList.remove("open");document.body.style.overflow="";}
+    document.addEventListener("click",event=>{const speak=event.target.closest("[data-speak-key]");if(speak){const [id,language]=speak.dataset.speakKey.split(":");speakPhrase(id,language);}const copy=event.target.closest("[data-copy]");if(copy)copyText(copy.dataset.copy);const full=event.target.closest("[data-fullscreen]");if(full)openFullscreen(full.dataset.fullscreen);});
     document.getElementById("modalClose").addEventListener("click",closeFullscreen);
     modal.addEventListener("click",event=>{if(event.target===modal)closeFullscreen();});
     document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal.classList.contains("open"))closeFullscreen();});
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)stopSpeech();});
+    window.addEventListener("pagehide",stopSpeech);
 
     /* ---------- Date, D-Day, live itinerary ---------- */
     const TRIP_START = new Date("2026-09-11T00:00:00+08:00");
@@ -1059,6 +1139,7 @@
       if (name === "map") name="places";
       if (name === "checklist") name="info";
       const selected = validTabs.has(name) ? name : "today";
+      if (selected !== "phrases" && activeSpeechKey) stopSpeech();
       tabPanels.forEach(panel => {
         const active = panel.dataset.tab === selected;
         panel.hidden = !active;
