@@ -144,6 +144,10 @@
     .event-card.current { border-color: var(--day-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--day-color) 16%, transparent), var(--shadow); transform: translateX(3px); }
     .event-card.completed { opacity: .54; }
     .event-card.completed .event-title { text-decoration: line-through; text-decoration-thickness: 1px; }
+    .event-card.completed.collapsed { padding-block: 13px; opacity: .68; }
+    .event-card.completed.collapsed .event-top { align-items: center; }
+    .event-card.completed.collapsed .category, .event-card.completed.collapsed .english, .event-card.completed.collapsed .event-details { display: none; }
+    .event-card.completed.collapsed .event-title { margin-top: 0; font-size: 1rem; }
     .event-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
     .category { display: inline-flex; align-items: center; min-height: 23px; padding: 4px 8px; border-radius: 7px; background: color-mix(in srgb, var(--day-color) 11%, white); color: var(--day-color); font-size: .62rem; font-weight: 900; letter-spacing: .1em; }
     .event-title { margin: 8px 0 0; font-size: 1.18rem; line-height: 1.3; }
@@ -151,6 +155,9 @@
     .complete-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: white; cursor: pointer; font-size: .7rem; font-weight: 800; }
     .complete-btn .check { display: grid; place-items: center; width: 17px; height: 17px; border: 1.5px solid #b9b4aa; border-radius: 50%; color: transparent; font-size: .7rem; }
     .completed .complete-btn .check { border-color: var(--green); background: var(--green); color: white; }
+    .event-controls { flex: 0 0 auto; display: flex; gap: 6px; }
+    .expand-event-btn { display: inline-flex; align-items: center; gap: 5px; min-height: 33px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: #f3eee6; color: var(--ink); cursor: pointer; font-size: .7rem; font-weight: 800; }
+    .expand-event-btn .expand-icon { font-size: 1rem; line-height: 1; }
     .event-body { margin-top: 13px; color: #4e5b57; font-size: .9rem; }
     .event-body p { margin: 0; }
     .event-body ul { margin: 8px 0 0; padding-left: 18px; }
@@ -195,19 +202,9 @@
     .option strong { display: block; font-size: .84rem; }
     .option p { margin: 4px 0 0; color: var(--muted); font-size: .82rem; }
     .transport-note { margin: 15px 0 0; color: var(--muted); font-size: .78rem; }
-    .tools-grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: 16px; }
     .tool-card { padding: 24px; }
     .tool-card h3 { margin: 0; font-size: 1.3rem; }
     .tool-card > p { margin: 6px 0 20px; color: var(--muted); font-size: .82rem; }
-    .budget-list { display: grid; gap: 10px; }
-    .money-row { display: grid; grid-template-columns: 1fr minmax(145px, .65fr); align-items: center; gap: 15px; }
-    .money-row label { font-size: .84rem; font-weight: 750; }
-    .money-input { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: white; }
-    .money-input input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; text-align: right; font-variant-numeric: tabular-nums; }
-    .money-input span { color: var(--muted); font-size: .72rem; font-weight: 750; }
-    .total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; padding-top: 17px; border-top: 2px solid var(--ink); }
-    .total span { font-size: .75rem; font-weight: 900; letter-spacing: .12em; }
-    .total strong { color: var(--coral-dark); font-size: 1.65rem; }
     .rate-control { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; padding: 11px 13px; border-radius: 11px; background: #fff3df; }
     .rate-control label { font-size: .76rem; font-weight: 800; }
     .rate-control input { width: 88px; padding: 6px 8px; border: 1px solid #e4cda8; border-radius: 8px; text-align: right; }
@@ -390,7 +387,7 @@
       .weather-card { grid-template-columns: 1fr; }
       .weather-note { grid-column: auto; }
       .section-head { align-items: flex-start; flex-direction: column; }
-      .transport-grid, .tools-grid { grid-template-columns: 1fr; }
+      .transport-grid { grid-template-columns: 1fr; }
       .checklist { grid-template-columns: repeat(2, 1fr); }
       .places-grid { grid-template-columns: repeat(2, 1fr); }
       .info-grid { grid-template-columns: 1fr; }
@@ -415,11 +412,11 @@
       .event-dot { left: -20px; top: 7px; }
       .event-card { padding: 18px 16px; }
       .complete-btn { padding: 6px; }
-      .complete-btn .complete-text { display: none; }
+      .complete-btn .complete-text, .expand-event-btn .expand-text { display: none; }
+      .expand-event-btn { min-width: 31px; min-height: 31px; padding: 6px; justify-content: center; }
       .important-card, .sunset-highlight, .rain-wrap { margin-left: 27px; }
       .sunset-inner { grid-template-columns: 1fr; padding: 22px 18px; }
       .sunset-countdown { text-align: left; }
-      .money-row { grid-template-columns: .65fr 1fr; }
       .checklist { grid-template-columns: 1fr 1fr; }
       .tips { grid-template-columns: 1fr; }
       .today-hero, .today-tools { grid-template-columns: 1fr; }
@@ -605,11 +602,8 @@
     <!-- Budget & currency -->
     <section class="tab-panel" id="budget" data-tab="budget" role="tabpanel" hidden>
       <div class="container">
-        <div class="section-head"><div><p class="eyebrow">Money tools</p><h2>Budget</h2></div><p>1인 기준 예상 금액입니다. 실제 결제액에 맞춰 숫자를 바꾸면 합계가 즉시 계산됩니다.</p></div>
-        <div class="tools-grid">
-          <article class="tool-card card"><h3>여행 예상 비용</h3><p>단위 · 대한민국 원</p><div class="budget-list" id="budgetList"></div><div class="total"><span>TOTAL</span><strong id="budgetTotal">0원</strong></div></article>
-          <article class="tool-card card"><h3>TWD ↔ KRW</h3><p>간단 환율 계산기 · 실시간 API 미사용</p><div class="rate-control"><div><label for="exchangeRate">1 TWD 기준 환율</label><small>직접 확인 후 수정</small></div><div><input id="exchangeRate" type="number" inputmode="decimal" min="0" step="0.1" value="45"><span> KRW</span></div></div><div class="converter"><div class="currency-box"><label for="twdInput"><span>대만 달러</span><span>TWD</span></label><input id="twdInput" type="number" inputmode="decimal" min="0" placeholder="0"></div><div class="convert-symbol">⇅</div><div class="currency-box"><label for="krwInput"><span>대한민국 원</span><span>KRW</span></label><input id="krwInput" type="number" inputmode="decimal" min="0" placeholder="0"></div></div></article>
-        </div>
+        <div class="section-head"><div><p class="eyebrow">Money tools</p><h2>Budget</h2></div><p>환율을 간단히 계산하고 여행 중 실제 지출을 기록합니다.</p></div>
+        <article class="tool-card card"><h3>TWD ↔ KRW</h3><p>간단 환율 계산기 · 실시간 API 미사용</p><div class="rate-control"><div><label for="exchangeRate">1 TWD 기준 환율</label><small>직접 확인 후 수정</small></div><div><input id="exchangeRate" type="number" inputmode="decimal" min="0" step="0.1" value="45"><span> KRW</span></div></div><div class="converter"><div class="currency-box"><label for="twdInput"><span>대만 달러</span><span>TWD</span></label><input id="twdInput" type="number" inputmode="decimal" min="0" placeholder="0"></div><div class="convert-symbol">⇅</div><div class="currency-box"><label for="krwInput"><span>대한민국 원</span><span>KRW</span></label><input id="krwInput" type="number" inputmode="decimal" min="0" placeholder="0"></div></div></article>
         <article class="tool-card card" style="margin-top:16px"><div class="checklist-head"><div><p class="eyebrow">Local spending</p><h3>Expense Log</h3></div><button class="reset-btn" id="resetExpenses" type="button">전체 초기화</button></div><form class="expense-form" id="expenseForm"><input name="expense-amount" type="number" inputmode="decimal" min="0" step="1" placeholder="금액" required><select name="expense-currency" aria-label="통화"><option value="TWD">TWD</option><option value="KRW">KRW</option></select><select name="expense-category" aria-label="지출 카테고리"><option>FOOD</option><option>TRANSPORT</option><option>CAFE</option><option>SHOPPING</option><option>ETC</option></select><input name="expense-note" type="text" placeholder="메모 (예: 펑지아 지파이)"><button class="primary-btn" type="submit">등록</button></form><div class="expense-summary"><div class="expense-stat"><small>오늘 지출</small><strong id="todayExpense">NT$0</strong></div><div class="expense-stat"><small>전체 지출 · 원화 환산</small><strong id="totalExpense">0원</strong></div></div><div class="expense-list" id="expenseList"></div></article>
       </div>
     </section>
@@ -682,12 +676,6 @@
     ];
 
     const checklistData = ["여권","항공권","호텔 예약","TW Arrival Card","여행자 보험","eSIM","대만 달러","해외결제 카드","보조배터리","충전기","우산","선크림","얇은 겉옷","상비약"];
-    const budgetData = [
-      { key:"flight", label:"항공", value:200000 }, { key:"hotel", label:"숙박", value:150000 },
-      { key:"food", label:"식비", value:100000 }, { key:"transport", label:"교통", value:50000 },
-      { key:"cafe", label:"카페/간식", value:30000 }, { key:"activity", label:"관광", value:10000 },
-      { key:"shopping", label:"쇼핑", value:50000 }
-    ];
     const tipData = ["공항에서 EasyCard 구매·충전","버스는 승차·하차 때 모두 태그","Taichung Go로 실시간 도착 확인","야시장에서는 현금 준비","9월은 매우 덥고 습할 수 있음","접이식 우산 준비","쇼핑 후 호텔에 짐 내려놓기","Uber는 버스 대기가 길거나 지쳤을 때만"];
     const phraseData = [
       ["hello","BASIC","안녕하세요","Hello.","你好","Nǐ hǎo"],["thanks","BASIC","감사합니다","Thank you.","謝謝","Xièxie"],["no-thanks","BASIC","괜찮아요 / 필요 없어요","No, thank you.","不用，謝謝","Bú yòng, xièxie"],["sorry","BASIC","죄송합니다 / 실례합니다","Excuse me. / I'm sorry.","不好意思","Bù hǎoyìsi"],["yes","BASIC","네","Yes.","好","Hǎo"],["understand","BASIC","알겠습니다","I understand.","知道了","Zhīdào le"],
@@ -706,7 +694,6 @@
       "taichung-checklist":"checklist",
       "taichung-phrase-favorites":"phraseFavorites",
       "taichung-food-list":"foodList",
-      "taichung-budget":"budget",
       "taichung-rate":"exchangeRate",
       "taichung-active-tab":"activeTab",
       "taichung-active-day":"activeDay"
@@ -765,7 +752,7 @@
         phraseFavorites.clear();storage.get("taichung-phrase-favorites",defaultFavorites).forEach(id=>phraseFavorites.add(id));
         foodState=storage.get("taichung-food-list",{});
         rateInput.value=storage.get("taichung-rate",45);
-        renderItinerary();renderPlaces();renderFoodList();renderPhrases();renderBudget();renderChecklist();
+        renderItinerary();renderPlaces();renderFoodList();renderPhrases();renderChecklist();
         activateDay(storage.get("taichung-active-day",1));activateTab(storage.get("taichung-active-tab","today"),{scroll:false});
       }
       async function initialize(){
@@ -792,21 +779,22 @@
 
     /* ---------- Itinerary rendering ---------- */
     const completed = new Set(storage.get("taichung-completed", []));
+    const expandedCompleted = new Set();
     function renderItinerary() {
       document.querySelectorAll(".timeline").forEach(timeline => {
         const day = Number(timeline.dataset.day);
-        timeline.innerHTML = itinerary.filter(item => item.day === day).map(item => `
+        timeline.innerHTML = itinerary.filter(item => item.day === day).map(item => { const isCompleted=completed.has(item.id);const isExpanded=expandedCompleted.has(item.id);return `
           <article class="event" data-id="${item.id}" data-day="${item.day}" data-time="${item.time}">
             <time class="event-time" datetime="2026-09-${String(10 + item.day).padStart(2,"0")}T${item.time}">${item.time}</time>
             <span class="event-dot" aria-hidden="true"></span>
-            <div class="event-card card ${completed.has(item.id) ? "completed" : ""}">
+            <div class="event-card card ${isCompleted ? `completed ${isExpanded ? "" : "collapsed"}` : ""}">
               <div class="event-top"><div><span class="category">${item.category}</span><h3 class="event-title">${item.title}</h3><p class="english">${item.english}</p></div>
-              <button class="complete-btn" type="button" data-complete="${item.id}" aria-pressed="${completed.has(item.id)}"><span class="check">✓</span><span class="complete-text">${completed.has(item.id) ? "완료" : "방문 완료"}</span></button></div>
-              <div class="event-body"><p>${item.description}</p>${item.tips ? `<ul>${item.tips.map(tip => `<li>${tip}</li>`).join("")}</ul>` : ""}</div>
+              <div class="event-controls"><button class="complete-btn" type="button" data-complete="${item.id}" aria-pressed="${isCompleted}"><span class="check">✓</span><span class="complete-text">${isCompleted ? "완료" : "방문 완료"}</span></button>${isCompleted ? `<button class="expand-event-btn" type="button" data-event-expand="${item.id}" aria-expanded="${isExpanded}" aria-controls="event-details-${item.id}" aria-label="${item.title} 일정 ${isExpanded ? "최소화" : "최대화"}"><span class="expand-icon" aria-hidden="true">${isExpanded ? "↙" : "⤢"}</span><span class="expand-text">${isExpanded ? "최소화" : "최대화"}</span></button>` : ""}</div></div>
+              <div class="event-details" id="event-details-${item.id}"><div class="event-body"><p>${item.description}</p>${item.tips ? `<ul>${item.tips.map(tip => `<li>${tip}</li>`).join("")}</ul>` : ""}</div>
               <div class="event-meta"><span class="meta-chip">체류 · ${item.duration}</span><span class="meta-chip">이동 · ${item.transport}</span></div>
-              <div class="event-actions"><button class="map-btn" type="button" data-map="${item.mapQuery}">Google Maps</button></div>
+              <div class="event-actions"><button class="map-btn" type="button" data-map="${item.mapQuery}">Google Maps</button></div></div>
             </div>
-          </article>`).join("");
+          </article>`;}).join("");
       });
       updateProgress();
       updateCurrentSchedule();
@@ -817,12 +805,16 @@
       if (completeButton) {
         const id = completeButton.dataset.complete;
         completed.has(id) ? completed.delete(id) : completed.add(id);
+        expandedCompleted.delete(id);
         storage.set("taichung-completed", [...completed]);
-        const card = completeButton.closest(".event-card");
-        card.classList.toggle("completed", completed.has(id));
-        completeButton.setAttribute("aria-pressed", String(completed.has(id)));
-        completeButton.querySelector(".complete-text").textContent = completed.has(id) ? "완료" : "방문 완료";
-        updateProgress();
+        renderItinerary();
+        renderPlaces();
+      }
+      const expandButton = event.target.closest("[data-event-expand]");
+      if (expandButton) {
+        const id=expandButton.dataset.eventExpand;
+        expandedCompleted.has(id) ? expandedCompleted.delete(id) : expandedCompleted.add(id);
+        renderItinerary();
       }
       const mapButton = event.target.closest("[data-map]");
       if (mapButton) openGoogleMaps(mapButton.dataset.map);
@@ -1075,20 +1067,6 @@
       document.getElementById("progressBar").style.width = `${percent}%`;
     }
 
-    /* ---------- Budget ---------- */
-    function renderBudget() {
-      const saved = storage.get("taichung-budget", {});
-      document.getElementById("budgetList").innerHTML = budgetData.map(item => `<div class="money-row"><label for="budget-${item.key}">${item.label}</label><div class="money-input"><input id="budget-${item.key}" data-budget="${item.key}" type="number" inputmode="numeric" min="0" step="1000" value="${saved[item.key] ?? item.value}"><span>KRW</span></div></div>`).join("");
-      updateBudget();
-    }
-    function updateBudget() {
-      const values = {}; let total = 0;
-      document.querySelectorAll("[data-budget]").forEach(input => { const value = Math.max(0, Number(input.value) || 0); values[input.dataset.budget] = value; total += value; });
-      document.getElementById("budgetTotal").textContent = `${total.toLocaleString("ko-KR")}원`;
-      storage.set("taichung-budget", values);
-    }
-    document.addEventListener("input", event => { if (event.target.matches("[data-budget]")) updateBudget(); });
-
     /* ---------- Expense log ---------- */
     let expenses = storage.get("taichung-expenses", []);
     function expenseInKrw(expense){ return expense.currency === "TWD" ? expense.amount * validRate() : expense.amount; }
@@ -1191,7 +1169,7 @@
     /* ---------- Initialization ---------- */
     document.getElementById("tips").innerHTML = tipData.map((tip,index) => `<div class="tip"><span class="tip-num">${String(index + 1).padStart(2,"0")}</span><span>${tip}</span></div>`).join("");
     rateInput.value = storage.get("taichung-rate", 45);
-    renderItinerary(); renderPlaces(); renderFoodList(); renderPhrases(); renderBudget(); renderExpenses(); renderChecklist(); updateWeather(); updateTripClock();
+    renderItinerary(); renderPlaces(); renderFoodList(); renderPhrases(); renderExpenses(); renderChecklist(); updateWeather(); updateTripClock();
     activateDay(storage.get("taichung-active-day", 1));
     const initialTab = location.hash.slice(1) || storage.get("taichung-active-tab", "today");
     activateTab(initialTab, { scroll:false });
